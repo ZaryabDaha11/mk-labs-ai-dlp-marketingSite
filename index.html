@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MK Labs AI DLP — Local data-loss prevention for AI chat</title>
+<meta name="description" content="MK Labs AI DLP detects and redacts secrets and PII in AI chat prompts — 100% on the device, before anything is sent. No backend, no data collected. Enterprise-deployable and white-label.">
+<meta property="og:title" content="MK Labs AI DLP">
+<meta property="og:description" content="Stop sensitive data leaking into ChatGPT, Claude & Perplexity — redacted locally, before it's sent. No backend. No data collected.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #eef1f4;
+    --surface: #ffffff;
+    --surface-2: #f4f6f9;
+    --ink: #121821;
+    --muted: #586374;
+    --faint: #7d8899;
+    --line: #d8dee6;
+    --accent: #0b6b5f;
+    --accent-ink: #085048;
+    --accent-weak: #e0efec;
+    --warn: #8a5a00;
+    --warn-weak: #f6ecd6;
+    --shadow: 0 1px 2px rgba(18,24,33,.05), 0 10px 30px rgba(18,24,33,.07);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b0f14;
+      --surface: #12181f;
+      --surface-2: #161d26;
+      --ink: #e7edf4;
+      --muted: #9aa6b6;
+      --faint: #6f7c8d;
+      --line: #232c37;
+      --accent: #3fc2ab;
+      --accent-ink: #7fd8c8;
+      --accent-weak: #12312c;
+      --warn: #d7a54a;
+      --warn-weak: #2c2413;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 34px rgba(0,0,0,.4);
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, Segoe UI, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-ink); }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+  h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+  p { margin: 0; }
+  .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .13em; text-transform: uppercase; color: var(--accent); }
+
+  /* nav */
+  header.nav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  .nav-in { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 20px; max-width: 1040px; margin: 0 auto; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; }
+  .brand .mark { width: 28px; height: 28px; border-radius: 8px; background: var(--accent); color: #fff; display: grid; place-items: center; flex: none; }
+  .brand .mark svg { width: 16px; height: 16px; }
+  .nav-links { display: flex; align-items: center; gap: 22px; font-size: 14px; }
+  .nav-links a.link { color: var(--muted); text-decoration: none; }
+  .nav-links a.link:hover { color: var(--ink); }
+  .btn { display: inline-block; font: inherit; font-weight: 600; font-size: 14px; text-decoration: none;
+    padding: 10px 16px; border-radius: 9px; border: 1px solid var(--accent); background: var(--accent); color: #fff; }
+  .btn:hover { filter: brightness(1.05); }
+  .btn.ghost { background: transparent; color: var(--accent-ink); }
+  @media (max-width: 640px) { .nav-links a.link { display: none; } }
+
+  /* hero */
+  .hero { padding: clamp(48px, 8vw, 96px) 0 clamp(36px, 5vw, 64px); }
+  .hero .eyebrow { margin-bottom: 16px; }
+  .hero h1 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: clamp(34px, 6.5vw, 60px); line-height: 1.02; }
+  .hero h1 .em { color: var(--accent); }
+  .hero .lede { margin-top: 20px; font-size: clamp(16px, 2vw, 19px); color: var(--muted); max-width: 60ch; }
+  .hero .lede b { color: var(--ink); font-weight: 600; }
+  .cta-row { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 12px; }
+
+  /* stat strip */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 48px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px 16px; }
+  .stat .n { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: clamp(26px, 4vw, 34px); color: var(--accent); line-height: 1; }
+  .stat .k { margin-top: 6px; font-size: 13px; color: var(--muted); }
+  @media (max-width: 620px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+  /* sections */
+  section { padding: clamp(48px, 7vw, 88px) 0; }
+  .section-head { max-width: 62ch; margin-bottom: 36px; }
+  .section-head h2 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: clamp(26px, 4vw, 38px); }
+  .section-head p { margin-top: 12px; color: var(--muted); font-size: 17px; }
+
+  /* how it works diagram */
+  .flow { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: clamp(18px, 4vw, 32px); box-shadow: var(--shadow); }
+  .flow svg { width: 100%; height: auto; display: block; }
+
+  /* features grid */
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 860px) { .features { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .features { grid-template-columns: 1fr; } }
+  .feat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
+  .feat .ic { width: 34px; height: 34px; border-radius: 9px; background: var(--accent-weak); color: var(--accent); display: grid; place-items: center; margin-bottom: 14px; }
+  .feat .ic svg { width: 18px; height: 18px; }
+  .feat h3 { font-size: 16px; font-weight: 600; }
+  .feat p { margin-top: 8px; font-size: 14px; color: var(--muted); }
+
+  /* differentiator band */
+  .band { background: var(--surface-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .band .grid2 { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; }
+  @media (max-width: 800px) { .band .grid2 { grid-template-columns: 1fr; gap: 28px; } }
+  .receipts { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px;
+    font-family: "IBM Plex Mono", monospace; font-size: 13px; line-height: 1.9; overflow-x: auto; box-shadow: var(--shadow); }
+  .receipts .c { color: var(--faint); }
+  .receipts .v { color: var(--accent-ink); }
+  .receipts .k { color: var(--ink); font-weight: 500; }
+  .checklist { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 12px; }
+  .checklist li { display: flex; gap: 12px; font-size: 15px; }
+  .checklist .tick { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent-weak); color: var(--accent); display: grid; place-items: center; margin-top: 1px; }
+  .checklist .tick svg { width: 13px; height: 13px; }
+
+  /* audience */
+  .aud { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 700px) { .aud { grid-template-columns: 1fr; } }
+  .aud .card { border: 1px solid var(--line); border-radius: 14px; padding: 22px; background: var(--surface); }
+  .aud .card h3 { font-size: 16px; }
+  .aud .card p { margin-top: 8px; font-size: 14px; color: var(--muted); }
+
+  /* CTA */
+  .cta { text-align: center; }
+  .cta .box { background: var(--accent); color: #fff; border-radius: 20px; padding: clamp(36px, 6vw, 64px) 24px; }
+  .cta .box h2 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: clamp(26px, 4vw, 40px); color: #fff; }
+  .cta .box p { margin: 14px auto 0; max-width: 52ch; color: #dff1ec; font-size: 17px; }
+  .cta .btn-light { display: inline-block; margin-top: 26px; background: #fff; color: var(--accent-ink); border: none;
+    padding: 13px 24px; border-radius: 10px; font-weight: 700; text-decoration: none; }
+  .cta .small { margin-top: 14px; font-size: 13px; color: #cfe8e1; }
+  .cta .small a { color: #fff; }
+
+  /* footer */
+  footer { border-top: 1px solid var(--line); padding: 32px 0; }
+  .foot { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; align-items: center; }
+  .foot .muted { font-size: 13px; color: var(--muted); }
+  .disclaimer { margin-top: 16px; font-size: 12px; color: var(--faint); max-width: 80ch; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-in">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 7.8-7 9-4-1.2-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></span>
+      MK Labs AI DLP
+    </div>
+    <nav class="nav-links">
+      <a class="link" href="#how">How it works</a>
+      <a class="link" href="#features">Features</a>
+      <a class="link" href="#security">Security</a>
+      <a class="btn" href="mailto:zaryabdaha111@gmail.com?subject=MK%20Labs%20AI%20DLP%20—%20demo%20request">Request a demo</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Local data-loss prevention for AI chat</p>
+      <h1>Stop sensitive data leaking into <span class="em">AI chat.</span></h1>
+      <p class="lede">MK Labs AI DLP detects and redacts secrets and PII in ChatGPT, Claude, and Perplexity prompts — <b>100% on the device, before anything is sent</b>. No backend. No data collected. Nothing to send to a server, because there is no server.</p>
+      <div class="cta-row">
+        <a class="btn" href="mailto:zaryabdaha111@gmail.com?subject=MK%20Labs%20AI%20DLP%20—%20demo%20request">Request a demo</a>
+        <a class="btn ghost" href="#how">See how it works →</a>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="n">0</div><div class="k">network calls by the extension</div></div>
+        <div class="stat"><div class="n">0</div><div class="k">data collected by us</div></div>
+        <div class="stat"><div class="n">0</div><div class="k">backend to breach</div></div>
+        <div class="stat"><div class="n">100%</div><div class="k">detection runs on-device</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">How it works</p>
+        <h2>Scanned and redacted in the browser — before it's sent</h2>
+        <p>The extension hooks the browser's own network layer, inspects each outbound prompt and file, and redacts what's sensitive. The protected version is what reaches the AI site. Nothing is ever sent to us.</p>
+      </div>
+      <div class="flow">
+        <svg viewBox="0 0 820 250" role="img" aria-label="A prompt is scanned and redacted locally in the browser, then the protected version goes to the AI site. Nothing is sent to MK Labs.">
+          <defs>
+            <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/></marker>
+            <marker id="arx" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--faint)"/></marker>
+          </defs>
+          <rect x="8" y="46" width="170" height="72" rx="12" fill="var(--surface-2)" stroke="var(--line)"/>
+          <text x="93" y="78" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" font-weight="600" fill="var(--ink)">Your prompt</text>
+          <text x="93" y="97" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="var(--muted)">or attached file</text>
+          <line x1="178" y1="82" x2="222" y2="82" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar)"/>
+          <rect x="228" y="24" width="330" height="116" rx="14" fill="var(--accent-weak)" stroke="var(--accent)" stroke-width="1.5"/>
+          <text x="393" y="53" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14.5" font-weight="700" fill="var(--ink)">Your browser · MK Labs AI DLP</text>
+          <text x="393" y="76" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="12.5" fill="var(--ink)">scan → redact secrets → pseudonymize PII</text>
+          <text x="393" y="97" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="var(--accent-ink)">dictionary · regex · optional local model</text>
+          <text x="393" y="120" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="11.5" font-weight="600" letter-spacing=".08em" fill="var(--accent)">100% LOCAL · FAIL-CLOSED</text>
+          <line x1="558" y1="82" x2="602" y2="82" stroke="var(--accent)" stroke-width="2" marker-end="url(#ar)"/>
+          <rect x="608" y="46" width="196" height="72" rx="12" fill="var(--surface-2)" stroke="var(--line)"/>
+          <text x="706" y="78" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="14" font-weight="600" fill="var(--ink)">AI chat site</text>
+          <text x="706" y="97" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="12" fill="var(--muted)">receives the protected text</text>
+          <line x1="393" y1="140" x2="393" y2="196" stroke="var(--faint)" stroke-width="1.6" stroke-dasharray="5 5" marker-end="url(#arx)"/>
+          <rect x="268" y="198" width="250" height="44" rx="10" fill="none" stroke="var(--faint)" stroke-width="1.4" stroke-dasharray="5 5"/>
+          <text x="393" y="225" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="12.5" fill="var(--faint)">MK Labs servers — none exist</text>
+          <g stroke="#c0392b" stroke-width="2.4" stroke-linecap="round"><line x1="384" y1="159" x2="402" y2="177"/><line x1="402" y1="159" x2="384" y2="177"/></g>
+          <text x="540" y="172" font-family="IBM Plex Sans, sans-serif" font-size="12" font-weight="600" fill="var(--muted)">Nothing is ever sent to us.</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="band">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">What it does</p>
+        <h2>Complete protection, entirely on the device</h2>
+      </div>
+      <div class="features">
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+          <h3>Detects secrets &amp; PII</h3>
+          <p>API keys, tokens, private keys, credit cards, IBANs, SSNs, emails, phone numbers, IPs, and your own client/project names — many checksum-validated to cut false positives.</p>
+        </div>
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16"/><path d="M4 6h10"/><path d="M4 18h7"/></svg></div>
+          <h3>Redact or pseudonymize</h3>
+          <p>Secrets are hard-redacted and never restored. Client and project names become stable pseudonyms and are restored in the AI's reply — so the conversation stays fully usable.</p>
+        </div>
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 001 1h4"/><path d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z"/></svg></div>
+          <h3>Scans file uploads</h3>
+          <p>Attached files are checked before they upload — text, code, CSV, JSON, config, logs, PDF, and Office documents — all parsed locally. Sensitive files prompt for confirmation.</p>
+        </div>
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 7.8-7 9-4-1.2-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <h3>100% local, zero-network</h3>
+          <p>The detection engine is bundled in the extension. A strict content-security policy forbids remote code and the extension makes no network calls of its own. Verify it in DevTools.</p>
+        </div>
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg></div>
+          <h3>Enterprise-managed</h3>
+          <p>Force-install and lock settings through Google Admin, Microsoft Intune, or GPO — the tools IT already uses. No new infrastructure, no vendor console.</p>
+        </div>
+        <div class="feat">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></div>
+          <h3>White-label ready</h3>
+          <p>One config file rebrands the whole product — name, interface, and icon — so a partner can ship it under their own brand in minutes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECURITY / DIFFERENTIATOR -->
+  <section id="security">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Why it's different</p>
+        <h2>Built so there's nothing to send — and nothing to breach</h2>
+        <p>Most DLP tools route your data through their cloud. MK Labs AI DLP has no cloud. That single decision collapses most of a security review into favorable answers.</p>
+      </div>
+      <div class="grid2">
+        <div class="receipts">
+<div><span class="c"># Content Security Policy (no eval, no remote scripts)</span></div>
+<div><span class="k">script-src</span> <span class="v">'self' 'wasm-unsafe-eval'</span></div>
+<div>&nbsp;</div>
+<div><span class="c"># Least-privilege permissions</span></div>
+<div><span class="k">permissions</span>   = <span class="v">["offscreen", "storage"]</span></div>
+<div><span class="k">remote_models</span> = <span class="v">false</span> <span class="c"># bundled on-device</span></div>
+<div><span class="k">network_egress</span> = <span class="v">none</span></div>
+        </div>
+        <div>
+          <ul class="checklist">
+            <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div>Prompt and file content never leave the device via the extension.</div></li>
+            <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div>No accounts, no telemetry, no tracking — nothing collected.</div></li>
+            <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div>Fail-closed: if the engine can't scan, the message is blocked, not leaked.</div></li>
+            <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span><div>Favorable GDPR/CCPA posture — no vendor-side data to export, delete, or expose.</div></li>
+          </ul>
+          <p style="margin-top:18px;color:var(--muted);font-size:14px">A full security whitepaper and a pre-filled vendor-security questionnaire are available on request.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AUDIENCE -->
+  <section class="band">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Who it's for</p>
+        <h2>Any team whose people use AI tools</h2>
+      </div>
+      <div class="aud">
+        <div class="card"><h3>Managed service providers</h3><p>Add AI-usage protection to your security offering and deploy it across client fleets through the MDM you already run.</p></div>
+        <div class="card"><h3>Security &amp; IT teams</h3><p>Give employees the freedom to use AI tools without sending secrets, source code, or customer data outside the company.</p></div>
+        <div class="card"><h3>Regulated &amp; client-data businesses</h3><p>Finance, healthcare, legal, and agencies handling client data — reduce the risk of a careless paste becoming a disclosure.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="wrap">
+      <div class="box">
+        <h2>See it redact a live prompt in 90 seconds</h2>
+        <p>Available for licensing and white-label partnership. Book a walkthrough or request the security brief — we'll get back to you personally.</p>
+        <a class="btn-light" href="mailto:zaryabdaha111@gmail.com?subject=MK%20Labs%20AI%20DLP%20—%20demo%20request">Request a demo</a>
+        <p class="small">Or email <a href="mailto:zaryabdaha111@gmail.com">zaryabdaha111@gmail.com</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 7.8-7 9-4-1.2-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg></span> MK Labs AI DLP</div>
+      <div class="muted">© <span id="year">2026</span> MK Labs · <a href="mailto:zaryabdaha111@gmail.com">zaryabdaha111@gmail.com</a></div>
+    </div>
+    <p class="disclaimer">MK Labs AI DLP reduces the risk of sensitive data reaching third-party AI services by detecting and redacting it locally. Like any DLP control, it does not guarantee that every sensitive item is detected or prevented from leaving the browser, and works best as one layer of defense. ChatGPT, Claude, and Perplexity are trademarks of their respective owners; MK Labs is not affiliated with them.</p>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
